@@ -7,7 +7,5 @@ func main(){
     // #####
     // Main infinite loop to make sure we're always running.
     // Also allows for multiple clients.
-    for {
-        knockseq.AcceptKnocks()
-    }
+    knockseq.ListenCarefully()
 }
