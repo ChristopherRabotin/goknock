@@ -9,19 +9,28 @@ type Sequence struct {
     ports []int
     action Action
     portit int
+    conn net.Conn
+    ch chan bool
 }
 
+// Easy constructor for Sequence structs.
+func NewSequence(name string, host string, ports []int, action Action) Sequence{
+    return Sequence{name, host, ports, action, -1, nil, make(chan bool)}
+}
+
+// Returns the next available port according to the sequence.
 func (seq Sequence) nextport() int {
     seq.portit = (seq.portit + 1) % len(seq.ports)
     return seq.ports[seq.portit]
 }
 
+// Returns the formatted host and port.
 func (seq Sequence) addr() string {
-    return fmt.Sprintf("127.0.0.1:%d", seq.nextport())
+    return fmt.Sprintf("%s:%d", seq.host, seq.nextport())
 }
 
-func (seq Sequence) AcceptKnock() net.Conn {
-    fmt.Println(seq.addr())
+// Accepts the initial knock. Does not have any timeout.
+func (seq Sequence) AcceptKnocks() {
     tcpAddr, err := net.ResolveTCPAddr("tcp", seq.addr())
     if err != nil {
         // If we can't resolve the host, we'll panic!
@@ -35,8 +44,13 @@ func (seq Sequence) AcceptKnock() net.Conn {
     conn, err := netListen.Accept()
     if err != nil {
         fmt.Errorf("Client error", err)
-        return nil
     }else{
-        return conn
+        fmt.Println("Successful initial connection.")
+        // We've got a good connection, let's close it and move to the next one.
+        conn.Close()
     }
+}
+
+func (seq Sequence) acceptNext(){
+    
 }

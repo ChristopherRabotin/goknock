@@ -1,15 +1,16 @@
 package main
 
 import "fmt"
+import "net"
 
 // Action is a polymorphic interface. Sequences and their actions must be
 // defined in main.go. New actions can be created in actions/.
 type Action interface {
-    launch()
+    launch(conn net.Conn)
 }
 
 type Echo struct{}
 
-func (act Echo) launch() {
+func (act Echo) launch(conn net.Conn) {
     fmt.Println("Action Echo launched.")
 }
