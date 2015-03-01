@@ -73,7 +73,13 @@ func (seq *Sequence) acceptKnock() {
 	}
 
 	conn, err := netListen.Accept()
-	defer conn.Close()
+	defer func(){
+		// Closing everything.
+		conn.Close()
+		netListen.Close()
+		// Moving onto the next port after successful knock and/or action.
+		seq.acceptKnock()
+	}()
 
 	if err != nil {
 		// Client error, reseting the sequence.
@@ -96,9 +102,6 @@ func (seq *Sequence) acceptKnock() {
 		}
 		conn.Close()
 	}
-	// Moving onto the next port after successful knock and/or action.
-	netListen.Close()
-	seq.acceptKnock()
 }
 
 // Starts the initial listening for the sequence.
