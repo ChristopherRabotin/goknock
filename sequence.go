@@ -10,12 +10,12 @@ type Sequence struct {
     action Action
     portit int
     conn net.Conn
-    rcvd chan bool
+    debug bool
 }
 
 // Easy constructor for Sequence structs.
-func NewSequence(name string, host string, ports []int, action Action) *Sequence{
-    return &Sequence{name, host, ports, action, -1, nil, make(chan bool, 1)}
+func NewSequence(name string, host string, ports []int, action Action, debug bool) *Sequence{
+    return &Sequence{name, host, ports, action, -1, nil, debug}
 }
 
 // Returns the next available port according to the sequence.
@@ -37,7 +37,6 @@ func (seq *Sequence) reset() {
 // Accepts the initial knock. Does not have any timeout.
 func (seq *Sequence) acceptKnock() {
     addr := seq.addr()
-    fmt.Println(addr)
     tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
     if err != nil {
         // If we can't resolve the host, we'll panic!
@@ -48,8 +47,15 @@ func (seq *Sequence) acceptKnock() {
     defer netListen.Close()
     if err != nil {
         // If this port is taken, let's just go to the next one.
-        fmt.Println(err)
+        if seq.debug{
+            fmt.Println(err)
+        }
+        netListen.Close()
         seq.acceptKnock()
+    }
+    
+    if seq.debug{
+        fmt.Println("Listening on", addr, ".")
     }
     
     conn, err := netListen.Accept()
@@ -59,9 +65,12 @@ func (seq *Sequence) acceptKnock() {
         // Client error, reseting the sequence.
         fmt.Println(err)
         seq.reset()
-    }else if seq.portit != len(seq.ports) - 1 {
+    }else if seq.portit != len(seq.ports) - 1 && seq.debug {
         fmt.Println("Successful connection.")
     }else{
+        if seq.debug{
+            fmt.Println("Launching action %s.", seq.name)
+        }
         // Launch action!
         seq.action.launch(conn)
         // Once this returns let's reset the sequence to the original setting.
