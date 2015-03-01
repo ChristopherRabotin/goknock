@@ -4,7 +4,7 @@ import "fmt"
 import "net"
 
 // Action is a polymorphic interface. Sequences and their actions must be
-// defined in main.go. New actions can be created in actions/.
+// defined in main.go.
 type Action interface {
     launch(conn net.Conn)
 }
