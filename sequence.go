@@ -77,10 +77,9 @@ func (seq *Sequence) acceptKnock() {
 
 	if err != nil {
 		// Client error, reseting the sequence.
-		fmt.Println(err)
 		seq.reset()
-		if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
-			fmt.Println("Timed out")
+		if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() && seq.debug {
+			fmt.Println(err)
 		}
 
 	} else {
